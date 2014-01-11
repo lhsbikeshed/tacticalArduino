@@ -57,8 +57,8 @@ byte currentConnection = 0;
 #define STATE_PLAY 1
 #define STATE_COMPLETE 2
 
-#define SMOKEPIN 10
-#define TACPANELPIN 12
+#define SMOKEPIN 7
+#define TACPANELPIN 8
 
 byte state = STATE_START;
 boolean first = true;
@@ -174,11 +174,17 @@ void setup()
     digitalWrite(14 + i, HIGH);
   }
 
+  //push all relay pinshigh
+  for(int i=7; i < 13; i++){
+    pinMode(i, OUTPUT);
+    digitalWrite(i,HIGH);
+  }
+
   pinMode(SMOKEPIN, OUTPUT);
-  digitalWrite(SMOKEPIN,LOW);
+  digitalWrite(SMOKEPIN,HIGH);
   lastPanelRead = millis();
   pinMode(TACPANELPIN, OUTPUT);
-  digitalWrite(TACPANELPIN, LOW);
+  digitalWrite(TACPANELPIN, HIGH);
 }
 void fail(){
   currentConnection = 0;
@@ -193,10 +199,10 @@ void loop()
 
   //tactical panel
   if(tacticalPanelSolenoid && tacticalPanelTimer + 500 > millis()){
-      digitalWrite(TACPANELPIN, HIGH);
+      digitalWrite(TACPANELPIN, LOW);
   } else {
       tacticalPanelSolenoid = false;
-      digitalWrite(TACPANELPIN, LOW);
+      digitalWrite(TACPANELPIN, HIGH);
   }
   
   //conduit
@@ -294,10 +300,10 @@ void loop()
   }
 
   if(smoke == true){
-    digitalWrite(SMOKEPIN, HIGH);
+    digitalWrite(SMOKEPIN, LOW);
     if(smokeTimer + 1500 < millis()){
       smoke = false;
-      digitalWrite(SMOKEPIN, LOW);
+      digitalWrite(SMOKEPIN, HIGH);
     }
   }
 

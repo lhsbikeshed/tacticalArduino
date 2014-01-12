@@ -35,7 +35,8 @@ byte beamCharge[] = {
 boolean blinker = false;
 
 boolean decoyBlink = false;
-
+boolean tubeBlink = false;
+long tubeBlinkTimer = 0;
 int chargeRate = 5;
 long lastPanelRead = 0;
 
@@ -57,8 +58,9 @@ byte currentConnection = 0;
 #define STATE_PLAY 1
 #define STATE_COMPLETE 2
 
-#define SMOKEPIN 7
-#define TACPANELPIN 8
+#define SMOKEPIN 19
+#define TACPANELPIN 12
+#define TUBEPIN 7
 
 byte state = STATE_START;
 boolean first = true;
@@ -111,9 +113,12 @@ void processBuffer(){
   if(buffer[0] == 'P'){    //Power on
     poweredOn = true;
     poweredOnTimer = 320;
+    digitalWrite(TUBEPIN, LOW);
   } 
   else if (buffer[0] == 'p'){
     poweredOn = false;
+    tubeBlink = false;
+    digitalWrite(TUBEPIN, HIGH);
     ledState = 0;
     for(int b = 0; b < 4; b++){
       beamCharge[b] = 0;
@@ -144,6 +149,11 @@ void processBuffer(){
   } else if (buffer[0] == 'T'){
      tacticalPanelSolenoid = true;
      tacticalPanelTimer = millis();
+  } else if (buffer[0] == 'Q'){
+    if(poweredOn){
+      tubeBlink = true;
+      tubeBlinkTimer = millis();
+    }
   }
         
 
@@ -170,21 +180,23 @@ void setup()
   long btn = boardStatus(ledState);
 
   for(int i = 0; i < 5; i++){
+        digitalWrite(14 + i, HIGH);
+
     pinMode(14 + i, INPUT);
-    digitalWrite(14 + i, HIGH);
   }
 
   //push all relay pinshigh
-  for(int i=7; i < 13; i++){
-    pinMode(i, OUTPUT);
+  for(int i=7; i < 11; i++){
     digitalWrite(i,HIGH);
+
+    pinMode(i, OUTPUT);
   }
 
   pinMode(SMOKEPIN, OUTPUT);
-  digitalWrite(SMOKEPIN,HIGH);
+  digitalWrite(SMOKEPIN,LOW);
   lastPanelRead = millis();
   pinMode(TACPANELPIN, OUTPUT);
-  digitalWrite(TACPANELPIN, HIGH);
+  digitalWrite(TACPANELPIN, LOW);
 }
 void fail(){
   currentConnection = 0;
@@ -199,10 +211,10 @@ void loop()
 
   //tactical panel
   if(tacticalPanelSolenoid && tacticalPanelTimer + 500 > millis()){
-      digitalWrite(TACPANELPIN, LOW);
+      digitalWrite(TACPANELPIN, HIGH);
   } else {
       tacticalPanelSolenoid = false;
-      digitalWrite(TACPANELPIN, HIGH);
+      digitalWrite(TACPANELPIN, LOW);
   }
   
   //conduit
@@ -300,10 +312,10 @@ void loop()
   }
 
   if(smoke == true){
-    digitalWrite(SMOKEPIN, LOW);
+    digitalWrite(SMOKEPIN, HIGH);
     if(smokeTimer + 1500 < millis()){
       smoke = false;
-      digitalWrite(SMOKEPIN, HIGH);
+      digitalWrite(SMOKEPIN, LOW);
     }
   }
 

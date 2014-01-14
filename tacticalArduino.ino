@@ -180,9 +180,10 @@ void setup()
   long btn = boardStatus(ledState);
 
   for(int i = 0; i < 5; i++){
+        pinMode(14 + i, INPUT);
         digitalWrite(14 + i, HIGH);
 
-    pinMode(14 + i, INPUT);
+    
   }
 
   //push all relay pinshigh

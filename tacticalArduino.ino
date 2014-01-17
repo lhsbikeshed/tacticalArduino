@@ -67,6 +67,7 @@ boolean first = true;
 
 boolean smoke = false;
 long smokeTimer = 0;
+int smokeDuration = 0;
 
 long tacticalPanelTimer = 0;
 boolean tacticalPanelSolenoid = false;
@@ -133,29 +134,47 @@ void processBuffer(){
   else if (buffer[0] == 'S'){
     smoke = true;
     smokeTimer = millis();
+
+    smokeDuration += 1500;
+    smokeDuration > 5000 ? 5000 : smokeDuration;
+  } 
+  else if (buffer[0] == 's'){
+    smoke = true;
+    smokeTimer = millis();
+    if( buffer[1] >= '1' && buffer[1] <= '9'){
+      int dur = (buffer[1] - 48) * 500;
+      smokeDuration += 1500;
+    //Serial.println(dur);
+    } 
+    else {
+      smokeDuration += 1500;
+      smokeDuration > 5000 ? 5000 : smokeDuration;
+    }
   }
   else if (buffer[0] == 'L' ){ //set beamcharge rate
     switch (buffer[1]){
-      case '0':
-        chargeRate = 3;
-        break;
-      case '1':
-        chargeRate = 7;
-        break;
-      case '2':
-        chargeRate = 15;
-        break;
+    case '0':
+      chargeRate = 3;
+      break;
+    case '1':
+      chargeRate = 7;
+      break;
+    case '2':
+      chargeRate = 15;
+      break;
     }
-  } else if (buffer[0] == 'T'){
-     tacticalPanelSolenoid = true;
-     tacticalPanelTimer = millis();
-  } else if (buffer[0] == 'Q'){
+  } 
+  else if (buffer[0] == 'T'){
+    tacticalPanelSolenoid = true;
+    tacticalPanelTimer = millis();
+  } 
+  else if (buffer[0] == 'Q'){
     if(poweredOn){
       tubeBlink = true;
       tubeBlinkTimer = millis();
     }
   }
-        
+
 
 
 }
@@ -180,10 +199,10 @@ void setup()
   long btn = boardStatus(ledState);
 
   for(int i = 0; i < 5; i++){
-        pinMode(14 + i, INPUT);
-        digitalWrite(14 + i, HIGH);
+    pinMode(14 + i, INPUT);
+    digitalWrite(14 + i, HIGH);
 
-    
+
   }
 
   //push all relay pinshigh
@@ -212,12 +231,13 @@ void loop()
 
   //tactical panel
   if(tacticalPanelSolenoid && tacticalPanelTimer + 500 > millis()){
-      digitalWrite(TACPANELPIN, HIGH);
-  } else {
-      tacticalPanelSolenoid = false;
-      digitalWrite(TACPANELPIN, LOW);
+    digitalWrite(TACPANELPIN, HIGH);
+  } 
+  else {
+    tacticalPanelSolenoid = false;
+    digitalWrite(TACPANELPIN, LOW);
   }
-  
+
   //conduit
   if(state == STATE_START){
     byte c = 0;
@@ -314,8 +334,9 @@ void loop()
 
   if(smoke == true){
     digitalWrite(SMOKEPIN, HIGH);
-    if(smokeTimer + 1500 < millis()){
+    if(smokeTimer + smokeDuration < millis()){
       smoke = false;
+      smokeDuration = 0;
       digitalWrite(SMOKEPIN, LOW);
     }
   }
@@ -404,8 +425,9 @@ void loop()
               if(beamCharge[b] == 200){
                 Serial.print("F,");
                 beamCharge[b] = 0;
-              } else {
-                 Serial.print("f,");
+              } 
+              else {
+                Serial.print("f,");
               }
             }
           }
@@ -420,5 +442,6 @@ void loop()
 
   delay(10);
 }
+
 
 

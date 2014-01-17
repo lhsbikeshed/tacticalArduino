@@ -119,6 +119,7 @@ void processBuffer(){
   else if (buffer[0] == 'p'){
     poweredOn = false;
     tubeBlink = false;
+    decoyBlink = false;
     digitalWrite(TUBEPIN, HIGH);
     ledState = 0;
     for(int b = 0; b < 4; b++){

@@ -89,15 +89,16 @@ int chargeRate = 5;
 long lastPanelRead = 0;
 byte debounceCableState = 0;  //for 30ms debounce things
 byte lastCableState = 0;      //the last confirmed read of the cables state
-
+//cable pins -> colour map
+// yellow = 0
+// black = 1
+// white = 2
+// blue = 3
+// red = 4
 
 char buffer[10]; //serial buffer
 byte bufPtr = 0;
 
-byte connectionOrder[] = {  
-  2,0,1,4,3 };
-//white, yellow, black, blue, red*/
-byte currentConnection = 0;
 
 
 

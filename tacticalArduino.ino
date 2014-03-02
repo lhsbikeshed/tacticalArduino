@@ -113,6 +113,7 @@ void processBuffer(){
 
   if(buffer[0] == 'P'){    //Power on
     poweredOn = true;
+    decoyBlink = true;
     poweredOnTimer = 320;
     digitalWrite(TUBEPIN, LOW);
   } 

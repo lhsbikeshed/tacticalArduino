@@ -17,7 +17,8 @@
  * sX for smoke machine blast of X * 500 ms (x = 0-9)
  * p for power off
  * P for power on
- * C dump out the current cable state (in cX/CX format above)
+ * C dump out the current cable state (in cX/CX format above)]
+ * F Flash the strobe
  */
 
 //keymap
@@ -53,6 +54,12 @@ orn     common led anode (i.e. +5V)
 #define SMOKEPIN 19
 #define TACPANELPIN 12
 #define TUBEPIN 7
+#define STROBEPIN 8
+
+//strobe bits
+long strobeTimer = 0;
+boolean strobing = false;
+#define STROBETIME 400
 
 
 //last state of buttons from keyboard
@@ -227,6 +234,10 @@ void processBuffer(){
       Serial.print(i);
       Serial.print(",");
     }
+  } 
+  else if (buffer[0] == 'F'){
+    strobing = true;
+    strobeTimer = millis();
   }
 
 
@@ -248,6 +259,9 @@ void setup()
   pinMode(LEDSTROBE, OUTPUT);
   pinMode(LEDDATA, OUTPUT);
   digitalWrite(CLOCKPIN, LOW);
+
+  pinMode(STROBEPIN, OUTPUT);
+  digitalWrite(STROBEPIN, HIGH);
 
   ledState = 1;
   long btn = boardStatus(ledState);
@@ -309,6 +323,15 @@ void loop()
 {
   long currentTime = millis();
 
+
+  //----- strobe
+  if(strobing && strobeTimer + STROBETIME > currentTime){
+    digitalWrite(STROBEPIN, LOW);
+  } 
+  else {
+    digitalWrite(STROBEPIN, HIGH);
+    strobing = false;
+  }
 
   //--------------- tactical panel
   if(tacticalPanelSolenoid && tacticalPanelTimer + 500 > currentTime){
@@ -468,6 +491,7 @@ void loop()
 
   delay(10);
 }
+
 
 
 

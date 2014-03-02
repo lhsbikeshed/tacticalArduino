@@ -59,7 +59,7 @@ orn     common led anode (i.e. +5V)
 //strobe bits
 long strobeTimer = 0;
 boolean strobing = false;
-#define STROBETIME 400
+int strobeTime = 400;
 
 
 //last state of buttons from keyboard
@@ -216,6 +216,9 @@ void processBuffer(){
   else if (buffer[0] == 'T'){    //trigger the drop flap
     tacticalPanelSolenoid = true;
     tacticalPanelTimer = millis();
+    strobing = true;
+    strobeTimer = millis();
+    strobeTime = 1000;
   } 
   else if (buffer[0] == 'Q'){    //blink the large wall tube (not currently used)
     if(poweredOn){
@@ -235,9 +238,11 @@ void processBuffer(){
       Serial.print(",");
     }
   } 
+  
   else if (buffer[0] == 'F'){
     strobing = true;
     strobeTimer = millis();
+    strobeTime = 300 + random(600);
   }
 
 
@@ -325,7 +330,7 @@ void loop()
 
 
   //----- strobe
-  if(strobing && strobeTimer + STROBETIME > currentTime){
+  if(strobing && strobeTimer + strobeTime > currentTime){
     digitalWrite(STROBEPIN, LOW);
   } 
   else {

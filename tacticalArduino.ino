@@ -161,6 +161,7 @@ void processBuffer(){
 
   if(buffer[0] == 'P'){    //Power on
     poweredOn = true;
+    decoyBlink = true;
     poweredOnTimer = 320;
     digitalWrite(TUBEPIN, LOW);
   } 
@@ -422,17 +423,14 @@ void loop()
 
     int c = beamCharge[b] / 50;
     byte v = 0;
-    if(beamCharge[b] >= 0 && beamCharge[b] < 50 ){
+    if(beamCharge[b] >= 0 && beamCharge[b] < 67 ){
       v = 0x01;
     } 
-    else if(beamCharge[b] >= 50 && beamCharge[b] < 100 ) {
+    else if(beamCharge[b] >= 67 && beamCharge[b] < 134 ) {
       v = 0x03;
     } 
-    else if(beamCharge[b] >= 100 && beamCharge[b] < 150 ){
+    else if(beamCharge[b] >= 134 && beamCharge[b] < 200 ){
       v = 0x07;
-    } 
-    else if(beamCharge[b] >= 150 && beamCharge[b] < 200 ){
-      v = 15;
     } 
     else {
       if(blinker){

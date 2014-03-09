@@ -55,11 +55,17 @@ orn     common led anode (i.e. +5V)
 #define TACPANELPIN 12
 #define TUBEPIN 7
 #define STROBEPIN 8
+#define COMPLIGHT1 9
+#define COMPLIGHT2 10
 
 //strobe bits
 long strobeTimer = 0;
 boolean strobing = false;
 int strobeTime = 400;
+
+//computer lights
+int compLightTimer = 200;
+boolean compLightState = false;
 
 
 //last state of buttons from keyboard
@@ -239,7 +245,7 @@ void processBuffer(){
       Serial.print(",");
     }
   } 
-  
+
   else if (buffer[0] == 'F'){
     strobing = true;
     strobeTimer = millis();
@@ -268,6 +274,11 @@ void setup()
 
   pinMode(STROBEPIN, OUTPUT);
   digitalWrite(STROBEPIN, HIGH);
+
+  pinMode(COMPLIGHT1, OUTPUT);
+  pinMode(COMPLIGHT2, OUTPUT);
+  digitalWrite(COMPLIGHT1, HIGH);
+  digitalWrite(COMPLIGHT2, HIGH);
 
   ledState = 1;
   long btn = boardStatus(ledState);
@@ -328,7 +339,27 @@ void processCableState(byte in){
 void loop()
 {
   long currentTime = millis();
+  if(poweredOn){
+    compLightTimer--;
+    if(compLightTimer < 0){
+      compLightTimer = 200 + random(100);
+      compLightState = !compLightState;
+      if(compLightState){
+        digitalWrite(COMPLIGHT1, HIGH);
+        digitalWrite(COMPLIGHT2, LOW);
+      }
 
+      else {
+        digitalWrite(COMPLIGHT1, LOW);
+        digitalWrite(COMPLIGHT2, HIGH);
+
+      }
+    }
+  } 
+  else {
+    digitalWrite(COMPLIGHT1, HIGH);
+    digitalWrite(COMPLIGHT2, HIGH);
+  }
 
   //----- strobe
   if(strobing && strobeTimer + strobeTime > currentTime){
@@ -494,6 +525,10 @@ void loop()
 
   delay(10);
 }
+
+
+
+
 
 
 

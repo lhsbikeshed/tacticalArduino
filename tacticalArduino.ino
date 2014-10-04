@@ -464,9 +464,9 @@ void loop()
   byte weaponCurrent = digitalRead(WEAPONSWITCH);
   if(weaponCurrent != lastWeaponSwitchState){
     if(weaponCurrent){
-      Serial.print("W,");
-    } else {
       Serial.print("w,");
+    } else {
+      Serial.print("W,");
     }
     lastWeaponSwitchState = weaponCurrent;
     

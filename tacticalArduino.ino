@@ -191,8 +191,8 @@ void processBuffer(){
     smoke = true;
     smokeTimer = millis();
 
-    smokeDuration += 1500;
-    smokeDuration > 5000 ? 5000 : smokeDuration;
+    smokeDuration = 1000;
+    //smokeDuration > 5000 ? 5000 : smokeDuration;
   } 
   else if (buffer[0] == 's'){  //add 0-9 * 500ms of smoke to counter
     smoke = true;

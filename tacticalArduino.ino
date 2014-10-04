@@ -9,6 +9,7 @@
  * m for decoy
  * cX for disconnected cable X
  * CX for connected cable X
+ * w/W weapons on/off
  *
  * inputs:
  * d = damage flicker
@@ -19,6 +20,7 @@
  * P for power on
  * C dump out the current cable state (in cX/CX format above)]
  * F Flash the strobe
+ * A/a weapon charge light on/off
  */
 
 //keymap
@@ -50,13 +52,24 @@ orn     common led anode (i.e. +5V)
 #define STATE_PLAY 1
 #define STATE_COMPLETE 2
 
-//other pin defs
-#define SMOKEPIN 19
+//other pin defs  
+//19 is A5 on UNO, which on mega is 59
+#define SMOKEPIN 59
 #define TACPANELPIN 12
 #define TUBEPIN 7
 #define STROBEPIN 8
+
 #define COMPLIGHT1 9
 #define COMPLIGHT2 10
+
+#define WEAPONSWITCH 52
+#define WEAPONLIGHT 53
+#define BASE_CABLE_PIN 54
+
+//weapons toggle stuff
+byte weaponSwitchState = 0;
+byte lastWeaponSwitchState = 0;
+boolean weaponLightState = false;
 
 //strobe bits
 long strobeTimer = 0;
@@ -170,6 +183,7 @@ void processBuffer(){
     decoyBlink = true;
     poweredOnTimer = 320;
     digitalWrite(TUBEPIN, LOW);
+    
   } 
   else if (buffer[0] == 'p'){  //power off
     poweredOn = false;
@@ -235,7 +249,7 @@ void processBuffer(){
   } 
   else if (buffer[0] == 'C'){    //dump out the current cable state
     for(int i = 0; i < 5; i++){
-      if( digitalRead(14 + i)){
+      if( digitalRead(BASE_CABLE_PIN + i)){
         Serial.print("c");
       } 
       else {
@@ -250,6 +264,11 @@ void processBuffer(){
     strobing = true;
     strobeTimer = millis();
     strobeTime = 300 + random(600);
+  } 
+  else if (buffer[0] == 'A'){
+    weaponLightState = true;
+  } else if (buffer[0] == 'a'){
+    weaponLightState = false;
   }
 
 
@@ -275,18 +294,26 @@ void setup()
   pinMode(STROBEPIN, OUTPUT);
   digitalWrite(STROBEPIN, HIGH);
 
+
   pinMode(COMPLIGHT1, OUTPUT);
   pinMode(COMPLIGHT2, OUTPUT);
   digitalWrite(COMPLIGHT1, HIGH);
   digitalWrite(COMPLIGHT2, HIGH);
+
+  pinMode(WEAPONLIGHT, OUTPUT);
+  digitalWrite(WEAPONLIGHT, LOW);
+  
+  pinMode(WEAPONSWITCH, INPUT);
+  digitalWrite(WEAPONSWITCH, HIGH);
+
 
   ledState = 1;
   long btn = boardStatus(ledState);
 
   //setup the pins for the cable puzzle, inputs with pullups
   for(int i = 0; i < 5; i++){
-    pinMode(14 + i, INPUT);
-    digitalWrite(14 + i, HIGH);
+    pinMode(BASE_CABLE_PIN + i, INPUT);
+    digitalWrite(BASE_CABLE_PIN + i, HIGH);
 
 
   }
@@ -307,7 +334,7 @@ void setup()
 
   //read the first set of cable states
   for(int i = 0; i < 5; i++){
-    lastCableState |= (digitalRead(14 + i) << i);
+    lastCableState |= (digitalRead(BASE_CABLE_PIN + i) << i);
   }  
 }
 
@@ -385,7 +412,7 @@ void loop()
     lastPanelRead = currentTime;
     byte b = 0;
     for(int i = 0; i < 5; i++){
-      b |= (digitalRead(14 + i) << i);
+      b |= (digitalRead(BASE_CABLE_PIN + i) << i);
     }
     //if its settled then go process it
     if (b == debounceCableState){
@@ -425,14 +452,27 @@ void loop()
     }
   }
 
+  digitalWrite(WEAPONLIGHT, weaponLightState);  //set the weapon armed light led on or off
+
   //------------ panel power, if off then nothing past here executes
   if(poweredOn == false) {
     ledState = 0;
     long btn = boardStatus(ledState);
     return;
   }
-
-
+  
+  byte weaponCurrent = digitalRead(WEAPONSWITCH);
+  if(weaponCurrent != lastWeaponSwitchState){
+    if(weaponCurrent){
+      Serial.print("W,");
+    } else {
+      Serial.print("w,");
+    }
+    lastWeaponSwitchState = weaponCurrent;
+    
+  }
+  
+  
   //reset leds
   ledState = 0;
   //chargin teh layzors

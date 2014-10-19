@@ -9,6 +9,7 @@
  * m for decoy
  * cX for disconnected cable X
  * CX for connected cable X
+ * S for screne change button
  *
  * inputs:
  * d = damage flicker
@@ -57,6 +58,7 @@ orn     common led anode (i.e. +5V)
 #define STROBEPIN 8
 #define COMPLIGHT1 9
 #define COMPLIGHT2 10
+#define SCREENCHANGEBUTTON 50
 
 //strobe bits
 long strobeTimer = 0;
@@ -125,6 +127,8 @@ int smokeDuration = 0;
 long tacticalPanelTimer = 0;
 boolean tacticalPanelSolenoid = false;
 
+boolean lastScreenButtonState = false;
+long lastScreenButtonRead = 0;
 
 //get the current key status and set the LEDS at the same time
 unsigned long boardStatus(unsigned long leds){
@@ -279,6 +283,9 @@ void setup()
   pinMode(COMPLIGHT2, OUTPUT);
   digitalWrite(COMPLIGHT1, HIGH);
   digitalWrite(COMPLIGHT2, HIGH);
+  
+  pinMode(SCREENCHANGEBUTTON, INPUT);
+  digitalWrite(SCREENCHANGEBUTTON, HIGH);
 
   ledState = 1;
   long btn = boardStatus(ledState);
@@ -395,7 +402,17 @@ void loop()
     debounceCableState = b;
 
   }
-
+  
+  //-- scren change button
+  lastScreenButtonState = digitalRead(SCREENCHANGEBUTTON);
+  if(lastScreenButtonRead + 10 < millis()){
+    lastScreenButtonRead = millis();
+    boolean st = digitalRead(SCREENCHANGEBUTTON);
+    if(st == lastScreenButtonState && st == false){
+      Serial.print("S,");
+    }
+    
+  }
   //-------------------- serial reads --------------
   while ( Serial.available() > 0) {  // If data is available,
     char c = Serial.read();

@@ -452,7 +452,7 @@ void loop()
     }
   }
 
-  digitalWrite(WEAPONLIGHT, weaponLightState);  //set the weapon armed light led on or off
+ // digitalWrite(WEAPONLIGHT, weaponLightState);  //set the weapon armed light led on or off
 
   //------------ panel power, if off then nothing past here executes
   if(poweredOn == false) {

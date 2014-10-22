@@ -142,6 +142,7 @@ long tacticalPanelTimer = 0;
 boolean tacticalPanelSolenoid = false;
 
 boolean lastScreenButtonState = false;
+boolean screenButtonState = false;
 long lastScreenButtonRead = 0;
 
 //get the current key status and set the LEDS at the same time
@@ -432,16 +433,23 @@ void loop()
   }
   
   //-- scren change button
-  lastScreenButtonState = digitalRead(SCREENCHANGEBUTTON);
-  if(lastScreenButtonRead + 150 < millis()){
-    lastScreenButtonRead = millis();
-    boolean st = digitalRead(SCREENCHANGEBUTTON);
-    if(st == lastScreenButtonState && st == false){
-      Serial.print("S,");
-      lastScreenButtonState = st;
-    }
-    
+  screenButtonState = digitalRead(SCREENCHANGEBUTTON);
+  
+  if(lastScreenButtonRead + 50 < millis()){
+      screenButtonState = digitalRead(SCREENCHANGEBUTTON);
+      if(lastScreenButtonState != screenButtonState){
+        if( screenButtonState == false){
+          Serial.print("S,");
+        }
+        lastScreenButtonState = screenButtonState;
+      }
+      lastScreenButtonRead = millis();
   }
+      
+      
+   
+  
+  
   //-------------------- serial reads --------------
   while ( Serial.available() > 0) {  // If data is available,
     char c = Serial.read();

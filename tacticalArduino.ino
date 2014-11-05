@@ -11,7 +11,9 @@
  * F<X> for weapon that is ready
  * cX for disconnected cable X
  * CX for connected cable X
+ * S for screne change button
  * w/W weapons on/off
+
  *
  * inputs:
  * d = damage flicker
@@ -110,6 +112,7 @@ boolean first = true;
 
 #define COMPLIGHT1 9
 #define COMPLIGHT2 10
+#define SCREENCHANGEBUTTON 50
 
 #define WEAPONSWITCH 52
 #define WEAPONLIGHT 53
@@ -155,6 +158,160 @@ byte bufPtr = 0;
 
 
 
+<<<<<<< HEAD
+=======
+byte state = STATE_START;
+boolean first = true;
+
+boolean smoke = false;
+long smokeTimer = 0;
+int smokeDuration = 0;
+
+long tacticalPanelTimer = 0;
+boolean tacticalPanelSolenoid = false;
+
+boolean lastScreenButtonState = false;
+boolean screenButtonState = false;
+long lastScreenButtonRead = 0;
+
+//get the current key status and set the LEDS at the same time
+unsigned long boardStatus(unsigned long leds){
+  unsigned long buttons = 0;
+  byte bbit;
+
+  digitalWrite(READPIN,HIGH);
+  delayMicroseconds(20);
+  digitalWrite(READPIN,LOW);
+
+  digitalWrite(LEDSTROBE, HIGH);
+
+  for (int i = 0; i < 32 ; i++) {
+    //read the current bit from the keyboard
+
+    bbit = digitalRead(DATAPIN);
+    // Serial.print(bbit);
+    buttons |= (long)bbit << i;
+
+    digitalWrite(CLOCKPIN,HIGH);
+    long mask = 1l << i;
+    if (leds & mask)
+      digitalWrite(LEDDATA,LOW);
+    else
+      digitalWrite(LEDDATA,HIGH);
+    digitalWrite(CLOCKPIN,LOW);
+
+
+  }
+  //  Serial.println();
+
+  digitalWrite(LEDSTROBE,LOW);
+
+  return buttons;
+}
+
+
+/* process serial buffer */
+void processBuffer(){
+
+  if(buffer[0] == 'P'){    //Power on
+    poweredOn = true;
+    decoyBlink = true;
+    poweredOnTimer = 320;
+    digitalWrite(TUBEPIN, LOW);
+    
+  } 
+  else if (buffer[0] == 'p'){  //power off
+    poweredOn = false;
+    tubeBlink = false;
+    decoyBlink = false;
+    digitalWrite(TUBEPIN, HIGH);
+    ledState = 0;
+    for(int b = 0; b < 4; b++){
+      beamCharge[b] = 0;
+    }
+  }  
+  else if(buffer[0] == 'd'){    //turn off decoy blink effect
+    decoyBlink = false;
+  } 
+  else if (buffer[0] == 'D'){  //turn on decoy blink effect
+    decoyBlink = true;
+  } 
+  else if (buffer[0] == 'S'){  //fire some smoke, add 1500ms to the smoke counter
+    smoke = true;
+    smokeTimer = millis();
+
+    smokeDuration = 1000;
+    //smokeDuration > 5000 ? 5000 : smokeDuration;
+  } 
+  else if (buffer[0] == 's'){  //add 0-9 * 500ms of smoke to counter
+    smoke = true;
+    smokeTimer = millis();
+    if( buffer[1] >= '1' && buffer[1] <= '9'){
+      int dur = (buffer[1] - 48) * 500;
+      smokeDuration += 1500;
+      //Serial.println(dur);
+    } 
+    else {
+      smokeDuration += 1500;
+      smokeDuration > 5000 ? 5000 : smokeDuration;
+    }
+  }
+  else if (buffer[0] == 'L' ){ //set beamcharge rate
+    switch (buffer[1]){
+    case '0':
+      chargeRate = 3;
+      break;
+    case '1':
+      chargeRate = 7;
+      break;
+    case '2':
+      chargeRate = 15;
+      break;
+    }
+  } 
+  else if (buffer[0] == 'T'){    //trigger the drop flap
+    tacticalPanelSolenoid = true;
+    tacticalPanelTimer = millis();
+    strobing = true;
+    strobeTimer = millis();
+    strobeTime = 1000;
+  } 
+  else if (buffer[0] == 'Q'){    //blink the large wall tube (not currently used)
+    if(poweredOn){
+      tubeBlink = true;
+      tubeBlinkTimer = millis();
+    }
+  } 
+  else if (buffer[0] == 'C'){    //dump out the current cable state
+    for(int i = 0; i < 5; i++){
+      if( digitalRead(BASE_CABLE_PIN + i)){
+        Serial.print("c");
+      } 
+      else {
+        Serial.print("C");
+      }
+      Serial.print(i);
+      Serial.print(",");
+    }
+  } 
+
+  else if (buffer[0] == 'F'){
+    strobing = true;
+    strobeTimer = millis();
+    strobeTime = 300 + random(600);
+  } 
+  else if (buffer[0] == 'A'){
+    weaponLightState = true;
+  } else if (buffer[0] == 'a'){
+    weaponLightState = false;
+  }
+
+
+
+}
+
+
+>>>>>>> 2b27af1de454afebe5637fabe4343046829fc748
 
 void setup()
 {
@@ -168,6 +325,9 @@ void setup()
   pinMode(COMPLIGHT2, OUTPUT);
   digitalWrite(COMPLIGHT1, HIGH);
   digitalWrite(COMPLIGHT2, HIGH);
+  
+  pinMode(SCREENCHANGEBUTTON, INPUT);
+  digitalWrite(SCREENCHANGEBUTTON, HIGH);
 
   pinMode(WEAPONLIGHT, OUTPUT);
   digitalWrite(WEAPONLIGHT, LOW);
@@ -461,7 +621,49 @@ if(poweredOn){
     debounceCableState = b;
 
   }
+<<<<<<< HEAD
 //-------------------- smoke machine
+=======
+  
+  //-- scren change button
+  screenButtonState = digitalRead(SCREENCHANGEBUTTON);
+  
+  if(lastScreenButtonRead + 50 < millis()){
+      screenButtonState = digitalRead(SCREENCHANGEBUTTON);
+      if(lastScreenButtonState != screenButtonState){
+        if( screenButtonState == false){
+          Serial.print("S,");
+        }
+        lastScreenButtonState = screenButtonState;
+      }
+      lastScreenButtonRead = millis();
+  }
+      
+      
+   
+  
+  
+  //-------------------- serial reads --------------
+  while ( Serial.available() > 0) {  // If data is available,
+    char c = Serial.read();
+    if(c == ','){
+      processBuffer();
+      bufPtr = 0;
+    } 
+    else {
+      buffer[bufPtr] = c;
+      if(bufPtr + 1 < 5){
+        bufPtr++;
+      } 
+      else {
+        bufPtr = 0;
+      }
+
+    }
+
+  }
+  //-------------------- smoke machine
+>>>>>>> 2b27af1de454afebe5637fabe4343046829fc748
   if(smoke == true){
     digitalWrite(SMOKEPIN, HIGH);
     if(smokeTimer + smokeDuration < currentTime){

@@ -27,6 +27,8 @@
  * n<bank><comma terminated string> set the name of a weapon bank
  * X clears charge levels on all banks
  * x<bank> clears charge level on given bank
+ * W turn weapons panel on
+ * w turn weapons Panel off
  */
 
 //------------------------ KEYPAD SECTION -------------------------
@@ -35,16 +37,16 @@ const byte COLS = 4; // Three columns
 // Define the Keymap
 char keys[ROWS][COLS] = {
   {
-    '1','2','3', 'A'              }
+    '1','2','3', 'A'                }
   ,
   {
-    '4','5','6', 'B'              }
+    '4','5','6', 'B'                }
   ,
   {
-    '7','8','9', 'C'              }
+    '7','8','9', 'C'                }
   ,
   {
-    '*','0','#', 'D'              }
+    '*','0','#', 'D'                }
 };
 
 //-- WIRING FOR KEYPAD
@@ -171,16 +173,16 @@ void setup()
 
   pinMode(WEAPONLIGHT, OUTPUT);
   digitalWrite(WEAPONLIGHT, LOW);
-  
+
   pinMode(WEAPONSWITCH, INPUT);
   digitalWrite(WEAPONSWITCH, HIGH);
-  
+
   //set pin modes for buttons on controller
   for(int i = 0; i < 6; i++){
     pinMode(BASEPIN + i, INPUT);
     digitalWrite(BASEPIN + i, HIGH);
   }
-//setup the pins for the cable puzzle, inputs with pullups
+  //setup the pins for the cable puzzle, inputs with pullups
   for(int i = 0; i < 5; i++){
     pinMode(BASE_CABLE_PIN + i, INPUT);
     digitalWrite(BASE_CABLE_PIN + i, HIGH);
@@ -245,14 +247,12 @@ void doSerial(){
   if(Serial.available()){
     char c = Serial.read();
     if(c == 'P'){        //power on signal
-      p.powerOn();
       poweredOn = true;
       decoyBlink = true;
       poweredOnTimer = 320;
       digitalWrite(TUBEPIN, LOW);
     } 
     else if (c == 'p'){  //power off signal  
-      p.powerOff();
       poweredOn = false;
       tubeBlink = false;
       decoyBlink = false;
@@ -350,6 +350,13 @@ void doSerial(){
     } 
     else if (c == 'a'){
       weaponLightState = false;
+    } 
+    else if (c == 'W'){
+      p.powerOn();
+
+    } 
+    else if (c == 'w'){
+      p.powerOff();
     }
 
 
@@ -403,9 +410,9 @@ void loop()
     }
 
   }
-  
-    long currentTime = millis();
-if(poweredOn){
+
+  long currentTime = millis();
+  if(poweredOn){
     compLightTimer--;
     if(compLightTimer < 0){
       compLightTimer = 200 + random(100);
@@ -461,7 +468,7 @@ if(poweredOn){
     debounceCableState = b;
 
   }
-//-------------------- smoke machine
+  //-------------------- smoke machine
   if(smoke == true){
     digitalWrite(SMOKEPIN, HIGH);
     if(smokeTimer + smokeDuration < currentTime){
@@ -471,20 +478,22 @@ if(poweredOn){
     }
   }
 
- // digitalWrite(WEAPONLIGHT, weaponLightState);  //set the weapon armed light led on or off
+  // digitalWrite(WEAPONLIGHT, weaponLightState);  //set the weapon armed light led on or off
 
-  
+
   byte weaponCurrent = digitalRead(WEAPONSWITCH);
   if(weaponCurrent != lastWeaponSwitchState){
     if(weaponCurrent){
       Serial.print("w,");
-    } else {
+    } 
+    else {
       Serial.print("W,");
     }
     lastWeaponSwitchState = weaponCurrent;
-    
+
   }
 }
+
 
 
 

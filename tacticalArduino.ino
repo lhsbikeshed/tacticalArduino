@@ -37,16 +37,16 @@ const byte COLS = 4; // Three columns
 // Define the Keymap
 char keys[ROWS][COLS] = {
   {
-    '1','2','3', 'A'                }
+    '1','2','3', 'A'                  }
   ,
   {
-    '4','5','6', 'B'                }
+    '4','5','6', 'B'                  }
   ,
   {
-    '7','8','9', 'C'                }
+    '7','8','9', 'C'                  }
   ,
   {
-    '*','0','#', 'D'                }
+    '*','0','#', 'D'                  }
 };
 
 //-- WIRING FOR KEYPAD
@@ -112,7 +112,7 @@ boolean first = true;
 
 #define COMPLIGHT1 9
 #define COMPLIGHT2 10
-
+#define SCREENCHANGEBUTTON 50
 #define WEAPONSWITCH 52
 #define WEAPONLIGHT 53
 #define BASE_CABLE_PIN 54
@@ -136,6 +136,10 @@ int smokeDuration = 0;
 
 long tacticalPanelTimer = 0;
 boolean tacticalPanelSolenoid = false;
+
+boolean lastScreenButtonState = false;
+boolean screenButtonState = false;
+long lastScreenButtonRead = 0;
 
 //------------------------------- GENERAL STUFF --------------------------
 
@@ -207,7 +211,7 @@ void setup()
   for(int i = 0; i < 5; i++){
     lastCableState |= (digitalRead(BASE_CABLE_PIN + i) << i);
   }  
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   //initialise the lcd screens. This blocks for 5 seconds
   p.init();
@@ -478,6 +482,18 @@ void loop()
     }
   }
 
+  screenButtonState = digitalRead(SCREENCHANGEBUTTON);
+
+  if(lastScreenButtonRead + 50 < millis()){
+    screenButtonState = digitalRead(SCREENCHANGEBUTTON);
+    if(lastScreenButtonState != screenButtonState){
+      if( screenButtonState == false){
+        Serial.print("S,");
+      }
+      lastScreenButtonState = screenButtonState;
+    }
+    lastScreenButtonRead = millis();
+  }
   // digitalWrite(WEAPONLIGHT, weaponLightState);  //set the weapon armed light led on or off
 
 
@@ -493,6 +509,7 @@ void loop()
 
   }
 }
+
 
 
 

@@ -159,7 +159,7 @@ char buffer[10]; //serial buffer
 byte bufPtr = 0;
 
 
-
+long loopTime = 0;
 
 
 void setup()
@@ -370,6 +370,7 @@ void doSerial(){
 
 void loop()
 {
+  loopTime = millis();
   char key = kpd.getKey();
   if(key)  // Check for a valid key.
   {
@@ -419,7 +420,7 @@ void loop()
   if(poweredOn){
     compLightTimer--;
     if(compLightTimer < 0){
-      compLightTimer = 200 + random(100);
+      compLightTimer = 50 + random(50);
       compLightState = !compLightState;
       if(compLightState){
         digitalWrite(COMPLIGHT1, HIGH);
@@ -507,6 +508,13 @@ void loop()
     }
     lastWeaponSwitchState = weaponCurrent;
 
+  }
+  
+  
+  long loopDuration = millis() - loopTime;
+  loopDuration = 50 - loopDuration;
+  if(loopDuration > 0){
+    delay(loopDuration);
   }
 }
 

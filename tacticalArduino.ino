@@ -180,6 +180,9 @@ void setup()
 
   pinMode(WEAPONSWITCH, INPUT);
   digitalWrite(WEAPONSWITCH, HIGH);
+  
+  pinMode(SCREENCHANGEBUTTON, INPUT);
+  digitalWrite(SCREENCHANGEBUTTON, HIGH);
 
   //set pin modes for buttons on controller
   for(int i = 0; i < 6; i++){

@@ -491,9 +491,9 @@ void loop()
   if(lastScreenButtonRead + 50 < millis()){
     screenButtonState = digitalRead(SCREENCHANGEBUTTON);
     if(lastScreenButtonState != screenButtonState){
-      if( screenButtonState == false){
+      //if( screenButtonState == false){
         Serial.print("S,");
-      }
+      //}
       lastScreenButtonState = screenButtonState;
     }
     lastScreenButtonRead = millis();

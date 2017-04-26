@@ -5,9 +5,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-
 class PanelDisplay {
-
 public:
   PanelDisplay();
   void init();
@@ -20,9 +18,8 @@ public:
   int getValue(int bank);
   void setName(int bank, char* name);
 
-
 private:
-  LiquidCrystal_I2C* lcd1; 
+  LiquidCrystal_I2C* lcd1;
   LiquidCrystal_I2C* lcd2;
   LiquidCrystal_I2C* lcd3;
   LiquidCrystal_I2C* lcd4;
@@ -35,13 +32,11 @@ private:
 
   int blinkCt;
   int currentScreen;
-  
+
   long lastUpdateTime;
- 
 
   boolean powerState;
-  boolean blinker ;
+  boolean blinker;
 };
 
 #endif
-
